@@ -3,7 +3,7 @@
 ### Authors: 111321077_郭仁楷
 ### References: 105321010_劉宜甄_105321018_陳湘蕙
 
-# #完成功能
+## 完成功能
 1.可左右移動
 2.同時有一個/多個掉落物
 3.掉落物有不同速度.位置.大小
@@ -15,7 +15,7 @@
 
 
 #### Input/Output unit:<br>
-* 8x8 LED 矩陣，用來顯示對戰畫面。下圖為按下 clear 的初始畫面。<br>
+* 8x8 LED 矩陣，用來顯示畫面。下圖為按下 clear 的初始畫面。<br>
 <img src="https://github.com/kamiry/FPGA-project-1/blob/master/images/IO1.jpg" width="300"/><br>
 * 七段顯示器，用來顯示剩餘時間。<br>
 <img src="https://github.com/kamiry/FPGA-project-1/blob/master/images/IO2.jpg" width="300"/><br>
@@ -31,7 +31,7 @@ output reg [7:0]Blue //藍色燈,output reg [4:0]A_count,B_count //計分,output
 *** 請說明各 I/O 變數接到哪個 FPGA I/O 裝置，例如: button, button2 -> 接到 4-bit SW <br>
 *** 請加強說明程式邏輯 <br>
 
-#### Demo video: (請將影片放到雲端空間)
+#### Demo video:
 
 <a href="https://drive.google.com/file/d/1dsUKFF945moWpXyD0L86eseNf1l3repO/view?usp=sharing" title="Demo Video"><img src="https://github.com/kamiry/FPGA-project-1/blob/master/images/IO4.jpg" alt="Demo Video" width="500"/></a>
 
