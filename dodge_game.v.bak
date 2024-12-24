@@ -1,0 +1,633 @@
+module dodge_game(
+    output reg [7:0]position_R, position_B, position_G,  // 紅、藍、綠的物體位置（LED矩陣表示）
+    output reg [2:0]S,                                  // 物體所在的列位置
+    output reg touch,                                   // 碰撞訊號
+    input CLK, Clear, right, left,                     // 時鐘、重置、左右移動訊號
+    output reg A,B,C,D,E,F,G,                          // 七段顯示器的控制腳位
+    output reg [7:0]b,                                 // LED 生命值顯示
+    output reg COM1, COM2                              // 七段顯示器的共陰極選擇
+);
+
+    // 宣告
+    wire [7:0]p1;          // 玩家物體的橫向位置
+    wire [2:0]S1;          // 玩家物體的列位置
+    wire [7:0]p2, p3;      // 掉落物的橫向位置
+    wire [2:0]S2, S3;      // 掉落物的列位置
+    reg [1:0] count;       // 計數器，用於切換不同物體
+    reg [3:0] count2;      // 計數器，用於遊戲結束時顯示
+    reg [3:0]ti, s;        // 分數累積與其他邏輯輔助
+    reg COM;               // 七段顯示器切換
+    reg [0:3]a;            // 用於七段顯示器的數字顯示
+    reg x;                 // 初始化旗標
+    reg [4:0] hp;          // 生命值
+    reg [3:0]A_count, B_count; // 計分（十位與個位）
+
+    // 呼叫其他模組，生成掉落物與控制時序
+    divfreq C1(CLK, CLK_div);           // 時鐘除頻器
+    divfreq2 C2(CLK, CLK_div2);
+    divfreq3 C3(CLK, CLK_div3);
+    divfreq4 C4(CLK, CLK_div4);
+    divfreq5 C5(CLK, CLK_div5);
+    divfreq6 C6(CLK, CLK_div6);
+    moveobject M1(CLK_div, Clear, right, left, p1, S1); // 移動玩家物體模組
+    fallingobject F1(CLK_div2, CLK_div5, Clear, touch, p2, S2, get1); // 掉落物 1
+    fallingobject2 F2(CLK_div4, CLK_div6, Clear, p3, S3, get2);       // 掉落物 2
+
+    // 初始化
+    initial begin
+        touch = 0;          // 初始無碰撞
+        b = 8'b11111111;    // 全部生命值燈亮
+        s = 0;              // 初始分數為 0
+        x = 1;              // 初始化旗標
+    end
+
+    // 處理計分邏輯
+    always @(posedge CLK_div11, posedge Clear) begin
+        if (Clear) begin    // 重置分數
+            A_count <= 4'b0000;
+            B_count <= 4'b0000;
+        end else if (hp < 9) begin
+            if (A_count < 4'b1001)    // 當個位數 < 9
+                A_count <= A_count + 1'd1; 
+            else begin                // 個位進位至十位
+                A_count <= 4'b0000;
+                B_count <= B_count + 1'd1;
+            end
+        end
+    end
+
+    // 七段顯示器的數字顯示切換
+    always @(posedge CLK_div3) begin
+        COM <= ~COM;
+        if (COM) begin
+            a[0:3] <= A_count;        // 顯示個位數
+            COM1 <= 1; COM2 <= 0;    // 選擇個位顯示
+        end else begin
+            a[0:3] <= B_count;        // 顯示十位數
+            COM1 <= 0; COM2 <= 1;    // 選擇十位顯示
+        end
+        // 七段顯示器數字邏輯
+          A = ~(a[0] & ~a[1] & ~a[2] | ~a[0] & a[2] | ...);
+          B = ~(~a[0]&~a[1] | ~a[1]&~a[2] | ~a[0]&~a[2]&~a[3] | ~a[0]&a[2]&a[3]);
+		    C = ~(~a[0]&a[1] | ~a[1]&~a[2] | ~a[0]&a[3]);
+			 D = ~(a[0]&~a[1]&~a[2] | ~a[0]&~a[1]&a[2] | ~a[0]&a[2]&~a[3] | ~a[0]&a[1]&~a[2]&a[3] | ~a[1]&~a[2]&~a[3]);
+			 E = ~(~a[1]&~a[2]&~a[3] | ~a[0]&a[2]&~a[3]);
+			 F = ~(~a[0]&a[1]&~a[2] | ~a[0]&a[1]&~a[3] | a[0]&~a[1]&~a[2] | ~a[1]&~a[2]&~a[3]);
+			 G = ~(a[0]&~a[1]&~a[2] | ~a[0]&~a[1]&a[2] | ~a[0]&a[1]&~a[2] | ~a[0]&a[2]&~a[3]);
+   end
+
+
+    // 碰撞處理邏輯
+    always @(posedge touch, posedge Clear) begin
+        if (Clear)
+            hp <= 0;          // 重置生命值
+        else if (hp <= 9)
+            hp <= hp + 1;     // 每次碰撞增加生命值
+    end
+endmodule
+
+always@(posedge touch, posedge Clear)
+begin
+   if (Clear)
+      hp <= 0;  // 如果 Clear 信號為高，將 hp 重置為 0
+   else if (hp <= 9)
+      hp <= hp + 1;  // 當 hp 小於等於 9 時，自增 1
+   // else
+      // hp <= 0;  // （此部分程式碼已註解）當需要時，可以重置 hp 為 0
+end
+
+always@(posedge CLK_div3, posedge Clear)
+begin
+   if (Clear)
+   begin
+      count <= count + 1;  // 清除時 count 自增
+      b <= 8'b11111111;  // 初始化 b 為全 1
+      if (count > 2)
+         count <= 0;  // 如果 count 大於 2，重置為 0
+      if (count == 0)
+      begin
+         position_R <= p1;  // 第一位置顯示紅色
+         position_G <= 8'b11111111;  // 關閉綠色
+         position_B <= 8'b11111111;  // 關閉藍色
+         S <= S1;  // 狀態 S 設定為 S1
+      end
+      else if (count == 1)
+      begin
+         position_R <= 8'b11111111;  // 關閉紅色
+         position_G <= 8'b11111111;  // 關閉綠色
+         position_B <= ~p2;  // 第二位置顯示藍色
+         S <= S2;  // 狀態 S 設定為 S2
+         if (get1)
+            s <= s + 1;  // 如果 get1 信號有效，計數器 s 加 1
+      end
+      else if (count == 2)
+      begin
+         position_R <= 8'b11111111;  // 關閉紅色
+         position_B <= 8'b11111111;  // 關閉藍色
+         position_G <= ~p3;  // 第三位置顯示綠色
+         S <= S3;  // 狀態 S 設定為 S3
+         if (get2)
+            s <= s + 1;  // 如果 get2 信號有效，計數器 s 加 1
+      end
+      // else 分支已註解，可用於擴展其他邏輯
+   end
+   else if (hp < 9)
+   begin
+      count <= count + 1;  // count 自增
+      if (count > 2)
+         count <= 0;  // count 重置為 0 以循環顯示不同位置
+      if (count == 0)
+      begin
+         position_R <= p1;  // 第一位置顯示紅色
+         position_G <= 8'b11111111;
+         position_B <= 8'b11111111;
+         S <= S1;
+      end
+      else if (count == 1)
+      begin
+         position_R <= 8'b11111111;
+         position_G <= 8'b11111111;
+         position_B <= ~p2;  // 第二位置顯示藍色
+         S <= S2;
+         if (get1)
+            s <= s + 1;  // 檢測 get1 信號並自增
+      end
+      else if (count == 2)
+      begin
+         position_R <= 8'b11111111;
+         position_B <= 8'b11111111;
+         position_G <= ~p3;  // 第三位置顯示綠色
+         S <= S3;
+         if (get2)
+            s <= s + 1;  // 檢測 get2 信號並自增
+      end
+      
+      // 檢測特殊條件下的觸碰信號
+      if (((p1 == ((~p2) + 2'b11)) && (S1 == S2)) || ((p1 == ((~p3) - 1'b1)) && (S1 == S3)))
+      begin
+         touch <= 1;  // 如果條件匹配，觸發 touch 信號
+      end
+      else
+         touch <= 0;
+
+      if (get1)
+         ti <= ti + 1;  // 檢測 get1 信號
+      if (get2)
+         ti <= ti + 1;  // 檢測 get2 信號
+      
+      // 根據 hp 的值控制顯示效果
+      if (hp == 0)
+         b <= 8'b11111111;  // 全 1
+      else if (hp == 1)
+         b <= 8'b11111110;  // 倒數第一位為 0
+      else if (hp == 2)
+         b <= 8'b11111100;  // 倒數第二位為 0
+      else if (hp == 3)
+         b <= 8'b11111000;  // ...
+      else if (hp == 4)
+         b <= 8'b11110000;
+      else if (hp == 5)
+         b <= 8'b11100000;
+      else if (hp == 6)
+         b <= 8'b11000000;
+      else if (hp == 7)
+         b <= 8'b10000000;
+      else if (hp == 8)
+         b <= 8'b00000000;  // 全 0
+   end
+   else if (hp == 9)  // 當 hp 等於 9 時，顯示 "OVER"
+   begin
+      count2 <= count2 + 1;  // 顯示計數器自增
+      b <= 8'b00000000;  // b 設定為全 0
+      if (count2 > 7)
+         count2 <= 0;  // 重置 count2 以循環顯示
+      if (count2 == 0)
+      begin
+         position_R <= 8'b00011111;  // 設定紅色顯示
+         position_G <= 8'b11100000;
+         position_B <= 8'b11111111;
+         S <= 0;
+      end
+      else if (count2 == 1)
+      begin
+         position_R <= 8'b01011111;
+         position_G <= 8'b11101010;
+         position_B <= 8'b11111111;
+         S <= 1;
+      end
+      else if (count2 == 2)
+      begin
+         position_R <= 8'b01011111;
+         position_G <= 8'b11101010;
+         position_B <= 8'b11111111;
+         S <= 2;
+      end
+      else if (count2 == 3)
+      begin
+         position_R <= 8'b00011111;
+         position_G <= 8'b11101010;
+         position_B <= 8'b11111111;
+         S <= 3;
+      end
+      else if (count2 == 4)
+      begin
+         position_R <= 8'b11100000;
+         position_G <= 8'b11111111;
+         position_B <= 8'b00100000;
+         S <= 4;
+      end
+      else if (count2 == 5)
+      begin
+         position_R <= 8'b11101011;
+         position_G <= 8'b11111111;
+         position_B <= 8'b11001011;
+         S <= 5;
+      end
+      else if (count2 == 6)
+      begin
+         position_R <= 8'b11101001;
+         position_G <= 8'b11111111;
+         position_B <= 8'b11001001;
+         S <= 6;
+      end
+      else if (count2 == 7)
+      begin
+         position_R <= 8'b11110110;
+         position_G <= 8'b11111111;
+         position_B <= 8'b00110110;
+         S <= 7;
+      end
+   end
+end
+endmodule
+
+////// 移動物件模組 //////
+// 此模組負責控制物件在顯示區域中的左右移動，並根據信號改變其位置。
+module moveobject(input CLK_div, Clear, right, left, output reg [7:0]position, output reg [2:0]S); 
+	always@(posedge CLK_div, posedge Clear)
+		begin
+			// 當 Clear 信號為高時，重置模組
+			if(Clear)
+				begin
+					S <= 4;  // 初始化物件位置索引 S 為 4（中間位置）
+					position <= ~(8'b00000011);  // 初始化 position，表示物件位置為預設值
+				end
+			// 當 left 信號有效時，向左移動
+			else if(left)
+				begin
+					if(S == 0)  // 如果物件已經在最左邊
+						begin
+							S <= S;  // 保持位置不變
+							position <= ~(8'b00000011);  // 保持原始位置
+						end
+					else  // 否則向左移動
+						begin
+							S <= S - 1;  // 將位置索引 S 減 1
+							position <= ~(8'b00000011);  // 更新 position 為新的位置
+						end
+				end
+			// 當 right 信號有效時，向右移動
+			else if(right)
+				begin
+					if(S == 7)  // 如果物件已經在最右邊
+						begin
+							S <= S;  // 保持位置不變
+							position <= ~(8'b00000011);  // 保持原始位置
+						end
+					else  // 否則向右移動
+						begin
+							S <= S + 1;  // 將位置索引 S 加 1
+							position <= ~(8'b00000011);  // 更新 position 為新的位置
+						end
+				end
+		end
+endmodule
+
+///// 藍色掉落物模組 /////
+module fallingobject(input CLK_div2, CLK_div5, touch, Clear, output reg [7:0]position_B, output reg [2:0]SS, output reg get);
+	reg [24:0] cnt; // 計數器，用於模擬隨機性
+	reg restart;    // 重新啟動掉落物的標誌
+
+	// 每次 CLK_div5 上升沿計數器遞增
+	always @(posedge CLK_div5) 
+		begin
+			if(cnt > 250000)
+				cnt <= 25'd0; 	// 當計數器超過指定值時重置
+			else
+				cnt <= cnt + 1'b1; // 計數器遞增
+		end
+	
+	// 初始設定
+	initial
+	begin
+		position_B = 8'b11000000; // 掉落物起始位置
+		SS = cnt % 8;            // 設定掉落位置（根據計數器值的餘數）
+		restart = 0;             // 預設不重新啟動
+		get = 0;                 // 初始未被接住
+	end	
+	
+	// 每次 CLK_div2 上升沿進行掉落邏輯處理
+	always @(posedge CLK_div2)
+		begin
+			if(restart)
+				begin
+					position_B <= 8'b11000000; // 掉落物回到起始位置
+					SS <= cnt % 8;            // 重新設定隨機掉落位置
+					restart = 0;              // 停止重新啟動狀態
+				end
+			else
+				begin
+					position_B = position_B >> 1; // 每次向下移動一格
+					if(position_B == 8'b00000000) // 如果掉落到最底部
+					begin
+						restart = 1; // 觸發重新啟動
+						get = 1;     // 標記為已掉落
+					end
+				end
+		end
+endmodule
+
+///// 綠色掉落物模組 /////
+module fallingobject2(input CLK_div4, CLK_div6, Clear, output reg [7:0]position_G, output reg [2:0]SS, output reg get);
+	reg [24:0] cnt; // 計數器，用於模擬隨機性
+	reg restart;    // 重新啟動掉落物的標誌
+
+	// 每次 CLK_div6 上升沿計數器遞增
+	always @(posedge CLK_div6) 
+		begin
+			if(cnt > 250000)
+				cnt <= 25'd0; 	// 當計數器超過指定值時重置
+			else
+				cnt <= cnt + 1'b1; // 計數器遞增
+		end 	
+
+	// 初始設定
+	initial
+	begin
+		position_G = 8'b10000000; // 掉落物起始位置
+		SS = cnt % 8;            // 設定掉落位置（根據計數器值的餘數）
+		restart = 0;             // 預設不重新啟動
+		get = 0;                 // 初始未被接住
+	end	
+	
+	// 每次 CLK_div4 上升沿進行掉落邏輯處理
+	always @(posedge CLK_div4)
+		begin
+			if(restart)
+				begin
+					position_G <= 8'b10000000; // 掉落物回到起始位置
+					SS <= cnt % 8;            // 重新設定隨機掉落位置
+					restart = 0;              // 停止重新啟動狀態
+				end
+			else 
+				begin
+					position_G = position_G >> 1; // 每次向下移動一格
+					if(position_G == 8'b00000000) // 如果掉落到最底部
+					begin
+						restart = 1; // 觸發重新啟動
+						get = 1;     // 標記為已掉落
+					end
+				end
+		end	
+endmodule
+
+///// 黃色掉落物模組 /////
+module fallingobject3(input CLK_div7, CLK_div8, Clear, output reg [7:0]position_Y, output reg [2:0]SS);
+	reg [24:0] cnt; // 計數器，用於模擬隨機性
+	reg restart;    // 重新啟動掉落物的標誌
+
+	// 每次 CLK_div8 上升沿計數器遞增
+	always @(posedge CLK_div8) 
+		begin
+			if(cnt > 250000)
+				cnt <= 25'd0; 	// 當計數器超過指定值時重置
+			else
+				cnt <= cnt + 1'b1; // 計數器遞增
+		end 	
+
+	// 初始設定
+	initial
+	begin
+		position_Y = 8'b10000000; // 掉落物起始位置
+		SS = cnt % 8;            // 設定掉落位置（根據計數器值的餘數）
+		restart = 0;             // 預設不重新啟動
+	end	
+	
+	// 每次 CLK_div7 上升沿進行掉落邏輯處理
+	always @(posedge CLK_div7)
+		begin
+			if(restart)
+				begin
+					position_Y <= 8'b10000000; // 掉落物回到起始位置
+					SS <= cnt % 8;            // 重新設定隨機掉落位置
+					restart = 0;              // 停止重新啟動狀態
+				end
+			else 
+				begin
+					position_Y = position_Y >> 1; // 每次向下移動一格
+					if(position_Y == 8'b00000000) // 如果掉落到最底部
+						restart = 1; // 觸發重新啟動
+				end
+		end	
+endmodule
+
+//////移動物的除頻器//////
+module divfreq(input CLK, output reg CLK_div); 
+	reg [24:0] Count; 
+	always @(posedge CLK) 
+		begin 
+			if(Count > 7500000) 
+				begin 
+					Count <= 25'b0; CLK_div <= ~CLK_div; 
+				end 
+			else 
+				Count <= Count + 1'b1; 	
+		end 
+endmodule 
+
+/////藍色掉落物的除頻器/////
+module divfreq2(input CLK, output reg CLK_div);
+	reg [24:0] Count; 
+	always @(posedge CLK) 
+		begin 
+			if(Count > 2500000) 
+				begin 
+					Count <= 25'b0; CLK_div <= ~CLK_div; 
+				end 
+			else 
+				Count <= Count + 1'b1; 
+		end 
+endmodule 
+
+//////移動物和掉落物交替的除頻器//////
+module divfreq3(input CLK, output reg CLK_div); 
+	reg [24:0] Count; 
+	always @(posedge CLK) 
+		begin 
+			if(Count > 50000) 
+				begin 
+					Count <= 25'b0; CLK_div <= ~CLK_div; 
+				end 
+			else 
+				Count <= Count + 1'b1; 
+		end 
+endmodule 
+
+///////////綠色掉落物的除頻器//////////
+module divfreq4(input CLK, output reg CLK_div); 
+reg [24:0] Count; 
+always @(posedge CLK) 
+begin 
+	if(Count > 2000000) 
+	begin 
+		Count <= 25'b0; CLK_div <= ~CLK_div; 
+	end 
+	else 
+		Count <= Count + 1'b1; 
+end 
+endmodule 
+
+////random////blue/////
+module divfreq5(input CLK, output reg CLK_div); 
+reg [24:0] Count; 
+always @(posedge CLK) 
+begin 
+	if(Count > 123456) 
+	begin 
+		Count <= 25'b0; CLK_div <= ~CLK_div; 
+	end 
+	else 
+		Count <= Count + 1'b1; 
+end 
+endmodule 
+
+////random////green////
+module divfreq6(input CLK, output reg CLK_div); 
+reg [24:0] Count; 
+always @(posedge CLK) 
+begin 
+	if(Count > 654321) 
+	begin 
+		Count <= 25'b0; CLK_div <= ~CLK_div; 
+	end 
+	else 
+		Count <= Count + 1'b1; 
+end 
+endmodule 
+
+///////////黃色掉落物的除頻器//////////
+module divfreq7(input CLK, output reg CLK_div); 
+reg [24:0] Count; 
+always @(posedge CLK) 
+begin 
+	if(Count > 3000000) 
+	begin 
+		Count <= 25'b0; CLK_div <= ~CLK_div; 
+	end 
+	else 
+		Count <= Count + 1'b1; 
+end 
+endmodule 
+
+////random////yellow////
+module divfreq8(input CLK, output reg CLK_div); 
+reg [24:0] Count; 
+always @(posedge CLK) 
+begin 
+	if(Count > 355555) 
+	begin 
+		Count <= 25'b0; CLK_div <= ~CLK_div; 
+	end 
+	else 
+		Count <= Count + 1'b1; 
+end 
+endmodule 
+/////倒數的除頻器//////
+module divfreq10(input CLK, output reg CLK_div); 
+	reg [24:0] Count; 
+	always @(posedge CLK) 
+		begin 
+			if(Count > 10000000) 
+				begin 
+					Count <= 25'b0; CLK_div <= ~CLK_div; 
+				end 
+			else 
+				Count <= Count + 1'b1; 	
+		end 
+endmodule 
+
+/////得分顯示模組//////
+module score(output reg A, B, C, D, E, F, G, input [3:0] A_count, B_count, input CLK_div, output reg COM1, COM2);
+	reg [3:0] a; // 暫存當前要顯示的數字
+	reg COM;     // 內部選擇控制信號
+
+	always @(posedge CLK_div)
+	begin
+		COM <= ~COM; // 在每個時鐘分頻信號的上升沿切換數碼顯示
+		if (COM)
+		begin
+			a[3:0] <= A_count; // 當 COM = 1，顯示 A_count
+			COM1 <= 1;
+			COM2 <= 0;
+		end
+		else
+		begin
+			a[3:0] <= B_count; // 當 COM = 0，顯示 B_count
+			COM1 <= 0;
+			COM2 <= 1;
+		end
+		
+		// 驅動七段顯示器的邏輯
+		A = ~(a[0] & ~a[1] & ~a[2] | ~a[0] & a[2] | ~a[1] & ~a[2] & ~a[3] | ~a[0] & a[1] & a[3]);
+		B = ~(~a[0] & ~a[1] | ~a[1] & ~a[2] | ~a[0] & ~a[2] & ~a[3] | ~a[0] & a[2] & a[3]);
+		C = ~(~a[0] & a[1] | ~a[1] & ~a[2] | ~a[0] & a[3]);
+		D = ~(a[0] & ~a[1] & ~a[2] | ~a[0] & ~a[1] & a[2] | ~a[0] & a[2] & ~a[3] | ~a[0] & a[1] & ~a[2] & a[3] | ~a[1] & ~a[2] & ~a[3]);
+		E = ~(~a[1] & ~a[2] & ~a[3] | ~a[0] & a[2] & ~a[3]);
+		F = ~(~a[0] & a[1] & ~a[2] | ~a[0] & a[1] & ~a[3] | a[0] & ~a[1] & ~a[2] | ~a[1] & ~a[2] & ~a[3]);
+		G = ~(a[0] & ~a[1] & ~a[2] | ~a[0] & ~a[1] & a[2] | ~a[0] & a[1] & ~a[2] | ~a[0] & a[2] & ~a[3]);
+	end
+endmodule
+
+///計時器模組///
+module counter4(output reg [3:0] A, output reg [3:0] B, input CLK, Clear);
+	reg [3:0] A_count;
+	reg [3:0] B_count;
+
+	always @(posedge CLK, posedge Clear)
+	begin
+		if (Clear) // 當重置信號為高時，計時器歸零
+		begin
+			A_count <= 4'b0000;
+			B_count <= 4'b0000;
+		end
+		else 
+		begin
+			if (A_count < 4'b1001) // A_count 增加到 9 後清零，進位到 B_count
+				A_count <= A_count + 1'b1;
+			else
+			begin
+				A_count <= 4'b0000; // 當 A_count == 9，清零並進位
+				B_count <= B_count + 1'b1;
+			end
+		end
+	end
+
+	// 將內部計數器輸出
+	assign A = A_count;
+	assign B = B_count;
+endmodule
+
+module divfreq11(input CLK, output reg CLK_div);
+	reg [29:0] Count;
+
+	always @(posedge CLK)
+	begin
+		if (Count > 75000000) // 當計數器超過 75000000 時，切換 CLK_div
+		begin
+			Count <= 30'b0;
+			CLK_div <= ~CLK_div; // 切換時鐘信號
+		end
+		else
+			Count <= Count + 1'b1; // 計數器遞增
+	end
+endmodule
