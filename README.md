@@ -14,7 +14,7 @@
 
 #### Input/Output unit:<br>
 * 8x8 LED 矩陣，用來顯示遊戲畫面。下圖為按下 clear 的初始畫面。<br>
-<img src="https://github.com/JenKaiKUO/113-1-final-project/blob/2ded8d94a1537686fb48145b97cfd343c2af2ea3/%E6%95%B4%E9%AB%94%E9%85%8D%E7%BD%AE.jpg)" width="300"/><br>
+![image](https://github.com/JenKaiKUO/113-1-final-project/blob/73882a70e310f725580134e9ddc53cf97f161d93/%E6%95%B4%E9%AB%94%E9%85%8D%E7%BD%AE.jpg)
 * 七段顯示器，用來顯示剩餘時間。<br>
 <img src="https://github.com/kamiry/FPGA-project-1/blob/master/images/IO2.jpg" width="300"/><br>
 * LED 陣列，用來計分。<br>
