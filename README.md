@@ -68,7 +68,7 @@
 
 ### I/O 接線：
 - **按鍵**：
-   - `Left, Right`: 這些按鍵連接到 FPGA 的按鈕，控制玩家的左右移動。
+   - `Left, Right`: 這些按鍵連接到 FPGA 的按鍵，控制玩家的左右移動。
    
 - **顯示**：
    - `DATA_R, DATA_G, DATA_B`: 連接到 8x8 LED 矩陣。
