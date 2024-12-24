@@ -16,9 +16,10 @@
 * 8x8 LED 矩陣，用來顯示遊戲畫面。下圖為按下 clear 的初始畫面。<br>
 ![image](https://github.com/JenKaiKUO/113-1-final-project/blob/73882a70e310f725580134e9ddc53cf97f161d93/%E6%95%B4%E9%AB%94%E9%85%8D%E7%BD%AE.jpg)
 * 七段顯示器，用來顯示剩餘時間。<br>
-<img src="https://github.com/JenKaiKUO/113-1-final-project/blob/9b4113063715d4a7c5a35925cf60c758b0ac0557/%E7%B5%90%E6%9D%9F%E7%95%AB%E9%9D%A2.jpg"/><br>
+<img src="https://github.com/JenKaiKUO/113-1-final-project/blob/9b4113063715d4a7c5a35925cf60c758b0ac0557/%E7%B5%90%E6%9D%9F%E7%95%AB%E9%9D%A2.jpg" width="300"/><br>
 * LED 陣列，用來計分。<br>
-<img src="https://github.com/kamiry/FPGA-project-1/blob/master/images/IO3.jpg" width="300"/><br>
+<img src="https://github.com/JenKaiKUO/113-1-final-project/blob/ea3f8c4d48780a2e4082ba9b23bc4865a5d84d0a/%E9%A1%AF%E7%A4%BA%E7%94%9F%E5%91%BD%E5%80%BC.jpg" width="300"/><br>
+
 
 #### 功能說明:<br>
 玩家初始血量為3，當玩家碰到掉落物時血量-1，血量為0時，畫面顯示"GG"<br>
