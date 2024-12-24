@@ -16,7 +16,7 @@
 * 8x8 LED 矩陣，用來顯示遊戲畫面。下圖為按下 clear 的初始畫面。<br>
 ![image](https://github.com/JenKaiKUO/113-1-final-project/blob/73882a70e310f725580134e9ddc53cf97f161d93/%E6%95%B4%E9%AB%94%E9%85%8D%E7%BD%AE.jpg)
 * 七段顯示器，用來顯示剩餘時間。<br>
-<img src="https://github.com/kamiry/FPGA-project-1/blob/master/images/IO2.jpg" width="300"/><br>
+<img src="https://github.com/JenKaiKUO/113-1-final-project/blob/9b4113063715d4a7c5a35925cf60c758b0ac0557/%E7%B5%90%E6%9D%9F%E7%95%AB%E9%9D%A2.jpg"/><br>
 * LED 陣列，用來計分。<br>
 <img src="https://github.com/kamiry/FPGA-project-1/blob/master/images/IO3.jpg" width="300"/><br>
 
