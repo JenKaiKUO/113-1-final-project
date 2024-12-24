@@ -1,21 +1,19 @@
 # 113-1-final-project
 # 閃躲遊戲
 ### Authors: 111321077_郭仁楷
-### References: 105321010_劉宜甄_105321018_陳湘蕙
+### References: 105321024_許瀚文_105321022_沈哲緯
 
 ## 完成功能
 1. 玩家可左右移動
 2. 同時有多個掉落物
-3. 掉落物有不同速度，位置，大小，顏色
-4. 計分制/計時制
+3. 掉落物有不同速度，位置，大小
+4. 計分制
 5. 碰到扣血/Game Over
-6. 新增掉落物(紅色)
-7. 新增回血機制(吃紅色掉落物可以回血)
-
+6.新增加速機制
 
 
 #### Input/Output unit:<br>
-* 8x8 LED 矩陣，用來顯示畫面。下圖為按下 clear 的初始畫面。<br>
+* 8x8 LED 矩陣，用來顯示遊戲畫面。下圖為按下 clear 的初始畫面。<br>
 <img src="https://github.com/kamiry/FPGA-project-1/blob/master/images/IO1.jpg" width="300"/><br>
 * 七段顯示器，用來顯示剩餘時間。<br>
 <img src="https://github.com/kamiry/FPGA-project-1/blob/master/images/IO2.jpg" width="300"/><br>
@@ -23,7 +21,7 @@
 <img src="https://github.com/kamiry/FPGA-project-1/blob/master/images/IO3.jpg" width="300"/><br>
 
 #### 功能說明:<br>
-紅色與藍色玩家對戰，先贏五球 或 在時間結束後最高分者獲勝。<br>
+玩家初始血量為3，當玩家碰到掉落物時血量-1，血量為0時，畫面顯示"GG"<br>
 
 #### 程式模組說明:<br>
 module slide_game(output reg[3:0]S //控制亮燈排數,output reg [7:0]Red //紅色燈,output reg [7:0]Green //綠色燈,
