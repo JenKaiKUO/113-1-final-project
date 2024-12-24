@@ -23,38 +23,24 @@
 
 
 #### 程式模組說明:<br>
-module slide_game(output reg[3:0]S //控制亮燈排數,output reg [7:0]Red //紅色燈,output reg [7:0]Green //綠色燈,
-output reg [7:0]Blue //藍色燈,output reg [4:0]A_count,B_count //計分,output [6:0]O //倒計時,output reg beep //叫聲,input [1:0]button //玩家一左右,input [1:0]button2 //玩家二左右,input CLk,Clear); <br><br>
-*** 請說明各 I/O 變數接到哪個 FPGA I/O 裝置，例如: button, button2 -> 接到 4-bit SW <br>
-*** 請加強說明程式邏輯 <br>
-* module dodge_game(
-    output reg [7:0] DATA_R, DATA_G, DATA_B,  // 分別控制紅色、綠色、藍色 LED 的資料輸出
-    output reg [6:0] d7_1,                      // 控制 7 段顯示器的輸出
-    output reg [2:0] COMM, Life,              // 用於 LED 行選擇與顯示玩家生命
-    output reg [1:0] COMM_CLK,                // 控制 LED 行掃描的clock信號
-    output EN,                                // enable信號(8*8全彩點矩陣)
-    input CLK, clear, Left, Right             // 時鐘、清除信號、左右移動按鍵
-
-這段程式碼描述的是一個基於 FPGA 的閃避遊戲模組 `dodge_game`。以下是每個模組的功能與各 I/O 變數接線的說明：
-
 ### 輸入輸出變數（I/O Variables）
 1. **輸出變數**:
-   - `DATA_R, DATA_G, DATA_B`: 分別控制紅色、綠色、藍色 LED 的顯示。這些變數將控制遊戲中的 LED 矩陣顯示，顯示玩家的位置、掉落物的位置等。
-   - `d7_1`: 控制 7 段顯示器的顯示，顯示遊戲中的時間、分數等。
+   - `DATA_R, DATA_G, DATA_B`: 控制遊戲中的 LED 矩陣顯示，顯示玩家的位置、掉落物的位置。
+   - `d7_1`: 控制 7 段顯示器的顯示，顯示遊戲中的時間。
    - `COMM`: 控制 8x8 LED 矩陣的行選擇。通過這個變數來切換顯示的行。
-   - `Life`: 顯示玩家的生命狀態，可能是顯示為紅色 LED 或在 7 段顯示器上顯示數字。
-   - `COMM_CLK`: 控制 LED 行掃描的時鐘信號，這個信號用來更新 LED 顯示的行。
-   - `EN`: 啟用信號，用來啟動顯示或控制其他部分。
+   - `Life`: 顯示玩家的血量在 7 段顯示器上。
+   - `COMM_CLK`: 控制 LED 行掃描的clock信號。
+   - `EN`: 啟用信號，用來啟動顯示8x8 LED 矩陣。
 
 2. **輸入變數**:
    - `CLK`: 時鐘信號，用於驅動所有模組的更新。
-   - `clear`: 清除信號，當此信號為高時，將重置遊戲狀態。
-   - `Left, Right`: 左右移動按鍵，控制玩家在 8x8 螢幕上的水平移動。
+   - `clear`: 清除信號，輸入 1 時，重置遊戲狀態。
+   - `Left, Right`: 左右移動按鍵，控制玩家移動。
 
 ### 內部變數：
 1. `plate[7:0]`: 8x8 矩陣，用於記錄掉落物的位置。每一行表示一個掉落物的位置，1 表示該位置有掉落物，0 則表示空白。
 2. `people[7:0]`: 8x8 矩陣，用於記錄玩家的位置。
-3. `seg1, seg2`: 用來顯示秒數和分鐘的 7 段顯示器的數據。
+3. `seg1, seg2`: 用來顯示秒數和分鐘的 7 段顯示器。
 4. `bcd_s, bcd_m`: 計時器的秒數和分鐘數。
 5. `random01, random02, random03`: 隨機數，用於生成掉落物的隨機位置。
 6. `r, r1, r2`: 掉落物的行索引。
@@ -82,17 +68,17 @@ output reg [7:0]Blue //藍色燈,output reg [4:0]A_count,B_count //計分,output
 
 ### I/O 接線：
 - **按鍵**：
-   - `Left, Right`: 這些按鍵連接到 FPGA 的 I/O 裝置（例如按鈕），控制玩家的左右移動。
+   - `Left, Right`: 這些按鍵連接到 FPGA 的按鈕，控制玩家的左右移動。
    
 - **顯示**：
-   - `DATA_R, DATA_G, DATA_B`: 這些分別控制紅色、綠色、藍色的 LED，連接到 8x8 LED 矩陣，用來顯示遊戲內容。
+   - `DATA_R, DATA_G, DATA_B`: 連接到 8x8 LED 矩陣。
    - `d7_1`: 連接到 7 段顯示器，顯示時間和分數。
-   - `COMM, Life`: 連接到 LED 行選擇與顯示玩家生命的區域。
+   - `COMM, Life`: 連接到 LED 。
 
 - **其他控制信號**：
    - `EN`: 啟用信號，可能接到其他顯示模組的使能端，控制顯示啟動。
 
-### 模組間協作：
+### 除頻器：
 - `divfreq`, `divfreq1`, 和 `divfreq2` 三個時鐘分頻模組用來分別控制遊戲的不同更新區域（計時、LED 顯示更新和遊戲邏輯更新）。
 
 #### Demo video:
