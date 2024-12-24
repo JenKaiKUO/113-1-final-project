@@ -13,7 +13,7 @@
 
 
 #### Input/Output unit:<br>
-*FPGA配置
+* FPGA配置
 * 8x8 LED 矩陣，用來顯示遊戲畫面。<br>
 <img src="https://github.com/JenKaiKUO/113-1-final-project/blob/73882a70e310f725580134e9ddc53cf97f161d93/%E6%95%B4%E9%AB%94%E9%85%8D%E7%BD%AE.jpg" width="500"/><br>
 * LED 陣列，用來顯示玩家血量。<br>
@@ -27,6 +27,14 @@ module slide_game(output reg[3:0]S //控制亮燈排數,output reg [7:0]Red //�
 output reg [7:0]Blue //藍色燈,output reg [4:0]A_count,B_count //計分,output [6:0]O //倒計時,output reg beep //叫聲,input [1:0]button //玩家一左右,input [1:0]button2 //玩家二左右,input CLk,Clear); <br><br>
 *** 請說明各 I/O 變數接到哪個 FPGA I/O 裝置，例如: button, button2 -> 接到 4-bit SW <br>
 *** 請加強說明程式邏輯 <br>
+* module dodge_game(
+    output reg [7:0] DATA_R, DATA_G, DATA_B,  // 分別控制紅色、綠色、藍色 LED 的資料輸出
+    output reg [6:0] d7_1,                      // 控制 7 段顯示器的輸出
+    output reg [2:0] COMM, Life,              // 用於 LED 行選擇與顯示玩家生命
+    output reg [1:0] COMM_CLK,                // 控制 LED 行掃描的clock信號
+    output EN,                                // enable信號(8*8全彩點矩陣)
+    input CLK, clear, Left, Right             // 時鐘、清除信號、左右移動按鍵
+);
 
 #### Demo video:
 * https://drive.google.com/file/d/1I0IOu6iZooMxrQU9HbarO3l-C_LdoXjv/view?usp=sharing
