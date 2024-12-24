@@ -29,6 +29,6 @@ output reg [7:0]Blue //藍色燈,output reg [4:0]A_count,B_count //計分,output
 *** 請加強說明程式邏輯 <br>
 
 #### Demo video:
+* https://drive.google.com/file/d/1I0IOu6iZooMxrQU9HbarO3l-C_LdoXjv/view?usp=sharing
 
-<a href="https://drive.google.com/file/d/1I0IOu6iZooMxrQU9HbarO3l-C_LdoXjv/view?usp=sharing" title="Demo Video" /><br>
 
